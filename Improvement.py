@@ -89,7 +89,7 @@ class Improvement:
 
         elif new_position > old_position:
             for i in range(old_position, new_position):
-                CW_new = self.recompute_cutwidth_for_inserted_vertices(CW_new, f_old, f_new, vertex, i, True)
+                CW_new = self.recompute_cutwidth_for_inserted_vertices(CW_new, f_old, f_new, vertex, i, False)
             if new_position == len(f_new):
                 CW_new.pop(vertex)
                 CW_new[vertex] = 0
