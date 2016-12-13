@@ -115,6 +115,21 @@ class Improvement:
         print 'CV: ' + str(CV)
         return CV
 
+    def is_improve(self, CW_G_new):
+
+        if self.CW_G < CW_G_new:
+            return True
+            # else:
+            # CV_new = self.get_critical_vertices(CW_new)
+            # keys_sorted = sorted(CV.keys(), reverse=True)
+            # keys_sorted_new = sorted(CV_new.keys(), reverse=True)
+            #
+            # for k in keys_sorted:
+            #     if k in keys_sorted_new:
+            #         if len(CV_new[k]) < len(CV[k]):
+            #             return True
+        return False
+
     # parameters: graph, f, pos, v
     def move(self, f, pos, v):
         # print 'Labeling(f): ' + str(f)
@@ -132,26 +147,38 @@ class Improvement:
 
     def improvement(self):
 
+        f_temp = {}
+        CW_temp = {}
+        CW_G_temp = self.CW_G
+        print "CW_G origin: " + str(self.CW_G)
+
         CV = self.get_critical_vertices(self.CW)
         keys_sorted = sorted(CV.keys(), reverse=True)
-        v = CV[keys_sorted[0]]
 
-        vertex = random.choice(v)
-        neighbors = self.graph.neighbors(vertex)
-        neighbors = map(int, neighbors)
-        median = int(round(np.median(neighbors)))
+        for k in keys_sorted:
+            for vertex in CV[k]:
 
-        old_position = self.get_label_by_vertex(self.f, vertex)
-        f_new = self.move(self.f.copy(), median, vertex)
-        CW_new = self.compute_new_cutwidth_for_all_vertices(self.CW, self.f, f_new, vertex, old_position, median)
-        CW_G_new = self.dv.get_cutwidth_of_graph(CW_new)
+                neighbors = self.graph.neighbors(vertex)
+                neighbors = map(int, neighbors)
+                median = int(round(np.median(neighbors)))
 
-        # temporary
-        if CW_G_new < self.CW_G:
-            self.f = f_new
-            self.CW = CW_new
-            self.CW_G = CW_G_new
+                old_position = self.get_label_by_vertex(self.f, vertex)
+                f_new = self.move(self.f.copy(), median, vertex)
+                CW_new = self.compute_new_cutwidth_for_all_vertices(self.CW, self.f, f_new, vertex, old_position,
+                                                                    median)
+                CW_G_new = self.dv.get_cutwidth_of_graph(CW_new)
 
+                if CW_G_new < CW_G_temp:
+                    f_temp = f_new
+                    CW_temp = CW_new
+                    CW_G_temp = CW_G_new
+
+        if len(f_temp) > 0:
+            self.f = f_temp
+            self.CW = CW_temp
+            self.CW_G = CW_G_temp
+
+        print 'CW_G_origin: ' + str(self.CW_G)
         return self.f, self.CW, self.CW_G
 
     def create_test_graph(selg):
@@ -178,13 +205,9 @@ class Improvement:
         print '-----------'
         print self.get_f_with_letters(self.f, self.letters)
         print 'CW: ' + str(self.get_f_with_letters(self.CW, self.letters, cw=True))
-        old_pos = 5
-        new_pos = 2
-        f_new = self.move(self.f.copy(), new_pos, self.f[old_pos])
-        print self.get_f_with_letters(f_new, self.letters)
-        CW_new = self.compute_new_cutwidth_for_all_vertices(self.CW, self.f.copy(), f_new, self.f[old_pos], old_pos,
-                                                            new_pos)
-        print 'CW_new: ' + str(self.get_f_with_letters(CW_new, self.letters, cw=True))
+        self.improvement()
+        print self.get_f_with_letters(self.f, self.letters)
+        print 'CW_new: ' + str(self.get_f_with_letters(self.CW, self.letters, cw=True))
 
     def get_f_with_letters(self, f, letters, cw=False):
         f_with_letters = {}
