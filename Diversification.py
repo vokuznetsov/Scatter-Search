@@ -47,7 +47,7 @@ class Diversification:
             f[k] = vertex
             S.append(vertex)
             U.remove(vertex)
-        return f, CW
+        return f, CW, self.get_cutwidth_of_graph(CW)
 
     def set_vertex_to_CW(self, graph, CW, f, v, k):
 

@@ -6,16 +6,12 @@ import Diversification
 
 
 class Improvement:
-    def __init__(self, file_name):
+    def __init__(self, graph):
         self.dv = Diversification.Diversification()
-        # self.graph, self.letters = self.create_test_graph()
-        self.graph = Parser.parser(file_name)
-        dv = Diversification.Diversification()
-        self.f, self.CW = dv.diversification(self.graph)
-        self.CW_G = self.dv.get_cutwidth_of_graph(self.CW)
-        print self.f
-        # print 'CW: ' + str(self.CW)
-        # print 'CW_G: ' + str(self.CW_G)
+        self.graph = graph
+        # self.f = f
+        # self.CW = CW
+        # self.CW_G = CW_G
         pass
 
     def get_label_by_vertex(self, f, vertex):
@@ -99,6 +95,16 @@ class Improvement:
         # print 'CW_new: ' + str(CW_new)
         return CW_new
 
+    def compute_cutwidth_by_labeling(self, graph, f):
+        CW = {}
+        for i in range(1, len(f) + 1):
+            if i == 1:
+                CW[f[i]] = len(graph.neighbors(f[i]))
+            else:
+                n_left, n_right = self.get_left_right_neigbors(graph, f, f[i], i)
+                CW[f[i]] = CW[f[i-1]] + n_right - n_left
+        return CW
+
     # parameters: BETA, CW
     def get_critical_vertices(self, CW):
         BETA = 0.5
@@ -111,13 +117,13 @@ class Improvement:
                 else:
                     CV[CW[v]] = [v]
 
-        print 'restrinction ' + str(restriction)
-        print 'CV: ' + str(CV)
+        # print 'restrinction ' + str(restriction)
+        # print 'CV: ' + str(CV)
         return CV
 
-    def is_improve(self, CW_G_new):
+    def is_improve(self, CW_G, CW_G_new):
 
-        if self.CW_G < CW_G_new:
+        if CW_G < CW_G_new:
             return True
             # else:
             # CV_new = self.get_critical_vertices(CW_new)
@@ -145,14 +151,14 @@ class Improvement:
         f_new[pos] = v
         return f_new
 
-    def improvement(self):
+    def improvement(self, f, CW, CW_G):
 
         f_temp = {}
         CW_temp = {}
-        CW_G_temp = self.CW_G
-        print "CW_G origin: " + str(self.CW_G)
+        CW_G_temp = CW_G
+        # print "CW_G origin: " + str(CW_G)
 
-        CV = self.get_critical_vertices(self.CW)
+        CV = self.get_critical_vertices(CW)
         keys_sorted = sorted(CV.keys(), reverse=True)
 
         for k in keys_sorted:
@@ -162,9 +168,9 @@ class Improvement:
                 neighbors = map(int, neighbors)
                 median = int(round(np.median(neighbors)))
 
-                old_position = self.get_label_by_vertex(self.f, vertex)
-                f_new = self.move(self.f.copy(), median, vertex)
-                CW_new = self.compute_new_cutwidth_for_all_vertices(self.CW, self.f, f_new, vertex, old_position,
+                old_position = self.get_label_by_vertex(f, vertex)
+                f_new = self.move(f.copy(), median, vertex)
+                CW_new = self.compute_new_cutwidth_for_all_vertices(CW, f, f_new, vertex, old_position,
                                                                     median)
                 CW_G_new = self.dv.get_cutwidth_of_graph(CW_new)
 
@@ -174,47 +180,47 @@ class Improvement:
                     CW_G_temp = CW_G_new
 
         if len(f_temp) > 0:
-            self.f = f_temp
-            self.CW = CW_temp
-            self.CW_G = CW_G_temp
+            f = f_temp
+            CW = CW_temp
+            CW_G = CW_G_temp
 
-        print 'CW_G_origin: ' + str(self.CW_G)
-        return self.f, self.CW, self.CW_G
+        print 'CW_G_new: ' + str(CW_G)
+        return f, CW, CW_G
 
-    def create_test_graph(selg):
-        letters = {"1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F"}
-        print letters
-        g = nx.Graph()
-        g.add_edge(1, 2)
-        g.add_edge(1, 4)
-        g.add_edge(1, 5)
-        g.add_edge(2, 1)
-        g.add_edge(2, 3)
-        g.add_edge(3, 2)
-        g.add_edge(4, 1)
-        g.add_edge(4, 5)
-        g.add_edge(4, 6)
-        g.add_edge(5, 1)
-        g.add_edge(5, 4)
-        g.add_edge(5, 6)
-        g.add_edge(6, 4)
-        g.add_edge(6, 5)
-        return g, letters
-
-    def test(self):
-        print '-----------'
-        print self.get_f_with_letters(self.f, self.letters)
-        print 'CW: ' + str(self.get_f_with_letters(self.CW, self.letters, cw=True))
-        self.improvement()
-        print self.get_f_with_letters(self.f, self.letters)
-        print 'CW_new: ' + str(self.get_f_with_letters(self.CW, self.letters, cw=True))
-
-    def get_f_with_letters(self, f, letters, cw=False):
-        f_with_letters = {}
-        if cw:
-            for i in f:
-                f_with_letters[letters[str(i)]] = f[i]
-        else:
-            for i in f:
-                f_with_letters[i] = letters[str(f[i])]
-        return f_with_letters
+    # def create_test_graph(selg):
+    #     letters = {"1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F"}
+    #     print letters
+    #     g = nx.Graph()
+    #     g.add_edge(1, 2)
+    #     g.add_edge(1, 4)
+    #     g.add_edge(1, 5)
+    #     g.add_edge(2, 1)
+    #     g.add_edge(2, 3)
+    #     g.add_edge(3, 2)
+    #     g.add_edge(4, 1)
+    #     g.add_edge(4, 5)
+    #     g.add_edge(4, 6)
+    #     g.add_edge(5, 1)
+    #     g.add_edge(5, 4)
+    #     g.add_edge(5, 6)
+    #     g.add_edge(6, 4)
+    #     g.add_edge(6, 5)
+    #     return g, letters
+    #
+    # def test(self):
+    #     print '-----------'
+    #     print self.get_f_with_letters(self.f, self.letters)
+    #     print 'CW: ' + str(self.get_f_with_letters(self.CW, self.letters, cw=True))
+    #     self.improvement()
+    #     print self.get_f_with_letters(self.f, self.letters)
+    #     print 'CW_new: ' + str(self.get_f_with_letters(self.CW, self.letters, cw=True))
+    #
+    # def get_f_with_letters(self, f, letters, cw=False):
+    #     f_with_letters = {}
+    #     if cw:
+    #         for i in f:
+    #             f_with_letters[letters[str(i)]] = f[i]
+    #     else:
+    #         for i in f:
+    #             f_with_letters[i] = letters[str(f[i])]
+    #     return f_with_letters
