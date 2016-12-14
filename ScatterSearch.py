@@ -28,7 +28,7 @@ import Combination
 
 
 def scatter_search(file_name):
-    P_SIZE = 4
+    P_SIZE = 100
     # graph, letters = create_test_graph()
 
     dv = Diversification.Diversification()
@@ -48,6 +48,8 @@ def scatter_search(file_name):
         f, CW, CW_G = dv.diversification(graph)
         f_impr, CW_impr, CW_G_impr = im.improvement(f, CW, CW_G)
         f_set.append(f_impr)
+
+    print 'Combination start!'
 
     while len(f_set) != 1:
         one = randint(0, len(f_set) - 1)
