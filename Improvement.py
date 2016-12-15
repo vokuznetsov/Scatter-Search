@@ -184,7 +184,7 @@ class Improvement:
             CW = CW_temp
             CW_G = CW_G_temp
 
-        print 'CW_G_new: ' + str(CW_G)
+        # print 'CW_G_new: ' + str(CW_G)
         return f, CW, CW_G
 
     # def create_test_graph(selg):
