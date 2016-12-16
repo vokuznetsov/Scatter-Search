@@ -1,5 +1,3 @@
-import networkx as nx
-from random import randint
 import Parser
 import Diversification
 import Improvement
@@ -41,6 +39,7 @@ def distance(f_set, f_new):
                 return False
         return True
 
+
 def is_best(best_f, best_CW, best_CW_G, f_impr, CW_impr, CW_G_impr):
     if CW_G_impr < best_CW_G:
         print 'Update CW_G: ' + str(CW_G_impr)
@@ -50,7 +49,7 @@ def is_best(best_f, best_CW, best_CW_G, f_impr, CW_impr, CW_G_impr):
 
 
 def scatter_search(file_name):
-    P_SIZE = 100
+    P_SIZE = 2
     FAILED_ATTEMPT = 0
     LIMIT_FAILED_ATTEMPT = 10
     # graph, letters = create_test_graph()
@@ -104,3 +103,10 @@ def scatter_search(file_name):
     print 'Best labeling: ' + str(best_f)
     print 'Best Cutwidth of vertices: ' + str(best_CW)
     print 'Best Cutwidth of graph: ' + str(best_CW_G)
+
+    f = open("result/cutwidth_ " + file_name[:-4] + "_sol.txt", 'w')
+
+    for i in range(1, len(best_f) + 1):
+        f.write(best_f[i])
+        f.write(' ')
+    f.close()
